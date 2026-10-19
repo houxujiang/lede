@@ -11,18 +11,18 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL=$(PROJECT_GIT)/project/iwinfo.git
-PKG_SOURCE_DATE:=2025-02-06
-PKG_SOURCE_VERSION:=9cec6b4dd2df80d4c02bad322a5db14203a92cba
-PKG_MIRROR_HASH:=0541587de92b669bd8dbde0cb1ec70435cb8999eece901e2ea986135c875c396
+PKG_SOURCE_DATE:=2026-05-26
+PKG_SOURCE_VERSION:=66bdd1a071895d91babc9b9228bb84626bbce226
+PKG_MIRROR_HASH:=162a48d9e9f98f80ee45d65094deb2f8237ec00cf459bce59040b9254994c26a
 PKG_MAINTAINER:=Jo-Philipp Wich <jo@mein.io>
 PKG_LICENSE:=GPL-2.0
 
 PKG_BUILD_FLAGS:=no-lto
 PKG_FLAGS := nonshared
 
-PKG_CONFIG_DEPENDS := \
+PKG_CONFIG_DEPENDS:= \
 	CONFIG_PACKAGE_kmod-mt7615d_dbdc \
-	CONFIG_PACKAGE_kmod-cfg80211
+	CONFIG_WIFI_SCRIPTS_UCODE
 
 IWINFO_ABI_VERSION:=20230701
 
@@ -67,7 +67,7 @@ define Package/iwinfo
   SECTION:=utils
   CATEGORY:=Utilities
   TITLE:=Generalized Wireless Information utility
-  DEPENDS:=+libiwinfo
+  DEPENDS:=+@!WIFI_SCRIPTS_UCODE:libiwinfo
 endef
 
 define Package/iwinfo/description
@@ -79,19 +79,20 @@ define Build/Configure
 endef
 
 IWINFO_BACKENDS := \
-	$(if $(CONFIG_PACKAGE_kmod-mt7615d_dbdc),ra) \
-	$(if $(CONFIG_PACKAGE_kmod-cfg80211),nl80211)
+	nl80211 \
+	$(if $(CONFIG_PACKAGE_kmod-mt7615d_dbdc),ra)
 
 TARGET_CFLAGS += \
+	-I$(PKG_BUILD_DIR)/include \
 	-I$(STAGING_DIR)/usr/include/libnl-tiny \
 	-I$(STAGING_DIR)/usr/include \
 	-D_GNU_SOURCE
 
 MAKE_FLAGS += \
 	FPIC="$(FPIC)" \
-	CFLAGS="$(TARGET_CFLAGS)" \
+	CFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)" \
 	LDFLAGS="$(TARGET_LDFLAGS)" \
-	BACKENDS="$(IWINFO_BACKENDS)" \
+	BACKENDS="$(strip $(IWINFO_BACKENDS))" \
 	SOVERSION="$(IWINFO_ABI_VERSION)"
 
 define Build/InstallDev
@@ -119,10 +120,16 @@ define Package/libiwinfo-data/install
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/devices.txt $(1)/usr/share/libiwinfo/devices.txt
 endef
 
-define Package/iwinfo/install
+ifdef CONFIG_WIFI_SCRIPTS_UCODE
+  define Package/iwinfo/install
+	:
+  endef
+else
+  define Package/iwinfo/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/iwinfo $(1)/usr/bin/iwinfo
-endef
+  endef
+endif
 
 $(eval $(call BuildPackage,libiwinfo))
 $(eval $(call BuildPackage,libiwinfo-lua))

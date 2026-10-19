@@ -234,7 +234,8 @@ platform_do_upgrade() {
 	netgear,wac510 |\
 	p2w,r619ac-64m |\
 	p2w,r619ac-128m |\
-	qxwlan,e2600ac-c2)
+	qxwlan,e2600ac-c2 |\
+	thinkplus,fogpod800)
 		nand_do_upgrade "$1"
 		;;
 	glinet,gl-b2200)
@@ -276,6 +277,13 @@ platform_do_upgrade() {
 		;;
 	compex,wpj419)
 		nand_do_upgrade "$1"
+		;;
+	google,wifi)
+		export_bootdevice
+		export_partdevice CI_ROOTDEV 0
+		CI_KERNPART="kernel"
+		CI_ROOTPART="rootfs"
+		emmc_do_upgrade "$1"
 		;;
 	linksys,ea6350v3 |\
 	linksys,ea8300 |\
@@ -326,7 +334,8 @@ platform_do_upgrade() {
 
 platform_copy_config() {
 	case "$(board_name)" in
-	glinet,gl-b2200)
+	glinet,gl-b2200 |\
+	google,wifi)
 		emmc_copy_config
 		;;
 	esac

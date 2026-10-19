@@ -1,13 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=qca-nss-dp
-PKG_RELEASE:=2
+PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=https://git.codelinaro.org/clo/qsdk/oss/lklm/nss-dp.git
+PKG_SOURCE_URL:=https://github.com/openwrt/qca-nss-dp.git
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_DATE:=2024-04-16
-PKG_SOURCE_VERSION:=5bf8b91e9fc209f175f9a58723b03055ace3d581
-PKG_MIRROR_HASH:=c50fefd3debbc01040f900c20da9a9bb6ae36aa72a532362aae1152e83c203a0
+PKG_SOURCE_DATE:=2025-11-22
+PKG_SOURCE_VERSION:=cdedfd891bdf7edd919e51fc3b35c68c860b6815
+PKG_MIRROR_HASH:=3045f32c90544a1f020ddd0466dfb2d22fbb830b7ab4b9b6d7a2124c3c77611e
 
 PKG_BUILD_PARALLEL:=1
 PKG_FLAGS:=nonshared

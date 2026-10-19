@@ -354,6 +354,7 @@ config KERNEL_PSI
 
 config KERNEL_KALLSYMS
 	bool "Compile the kernel with symbol table information"
+	default n if TARGET_qualcommax_ipq60xx
 	default y if !SMALL_FLASH
 	help
 	  This will give you more information in stack traces from kernel oopses.
@@ -445,6 +446,7 @@ config KERNEL_DEBUG_INFO
 
 config KERNEL_DEBUG_INFO_BTF
 	bool "Enable additional BTF type information"
+	default y if !SMALL_FLASH
 	depends on !HOST_OS_MACOS
 	depends on KERNEL_DEBUG_INFO && !KERNEL_DEBUG_INFO_REDUCED
 	select DWARVES
@@ -471,7 +473,7 @@ config KERNEL_MODULE_ALLOW_BTF_MISMATCH
 
 config KERNEL_DEBUG_INFO_REDUCED
 	bool "Reduce debugging information"
-	default y
+	default y if SMALL_FLASH
 	depends on KERNEL_DEBUG_INFO
 	help
 	  If you say Y here gcc is instructed to generate less debugging
@@ -558,12 +560,20 @@ config KERNEL_KPROBE_EVENTS
 
 config KERNEL_BPF_EVENTS
 	bool "Compile the kernel with BPF event support"
+	default n if TARGET_qualcommax_ipq60xx
+	default y if !SMALL_FLASH
 	select KERNEL_KPROBES
 	help
 	  Allows to attach BPF programs to kprobe, uprobe and tracepoint events.
 	  This is required to use BPF maps of type BPF_MAP_TYPE_PERF_EVENT_ARRAY
 	  for sending data from BPF programs to user-space for post-processing
 	  or logging.
+
+config KERNEL_BPF_STREAM_PARSER
+	bool "Enable BPF stream parser support"
+	default y if !SMALL_FLASH
+	help
+	  Enable BPF socket maps and stream parsing required by dae/daed.
 
 config KERNEL_PROBE_EVENTS_BTF_ARGS
 	bool "Support BTF function arguments for probe events"
@@ -608,6 +618,13 @@ choice
 	config KERNEL_TRANSPARENT_HUGEPAGE_MADVISE
 		bool "madvise"
 endchoice
+
+config KERNEL_ARM64_CONTPTE
+	bool "Compile the kernel with Contiguous PTE mappings for user memory"
+	depends on KERNEL_ARM64
+	depends on KERNEL_TRANSPARENT_HUGEPAGE
+	depends on LINUX_6_12
+	default y
 
 config KERNEL_HUGETLBFS
 	bool
@@ -1240,6 +1257,7 @@ config KERNEL_NET_L3_MASTER_DEV
 
 config KERNEL_XDP_SOCKETS
 	bool "XDP sockets support"
+	default y if !SMALL_FLASH
 	help
 	  XDP sockets allows a channel between XDP programs and
 	  userspace applications.
@@ -1305,6 +1323,23 @@ config KERNEL_BTRFS_FS
 	  Say Y here if you want to make the kernel to be able to boot off a
 	  BTRFS partition.
 
+config KERNEL_EROFS_FS
+	bool "Compile the kernel with built-in EROFS support"
+	help
+	  Say Y here if you want to make the kernel to be able to boot off a
+	  EROFS partition.
+
+config KERNEL_EROFS_FS_XATTR
+	bool "EROFS XATTR support"
+
+config KERNEL_EROFS_FS_ZIP
+	bool
+	default y if KERNEL_EROFS_FS
+
+config KERNEL_EROFS_FS_ZIP_LZMA
+	bool
+	default y if KERNEL_EROFS_FS
+
 menu "Filesystem ACL and attr support options"
 	config USE_FS_ACL_ATTR
 		bool "Use filesystem ACL and attr support by default"
@@ -1322,6 +1357,11 @@ menu "Filesystem ACL and attr support options"
 
 	config KERNEL_BTRFS_FS_POSIX_ACL
 		bool "Enable POSIX ACL for BtrFS Filesystems"
+		select KERNEL_FS_POSIX_ACL
+		default y if USE_FS_ACL_ATTR
+
+	config KERNEL_EROFS_FS_POSIX_ACL
+		bool "Enable POSIX ACL for EROFS Filesystems"
 		select KERNEL_FS_POSIX_ACL
 		default y if USE_FS_ACL_ATTR
 
@@ -1477,6 +1517,11 @@ config KERNEL_LSM
 	string
 	default "lockdown,yama,loadpin,safesetid,integrity,selinux"
 	depends on KERNEL_SECURITY_SELINUX
+
+config KERNEL_EROFS_FS_SECURITY
+	bool "EROFS Security Labels"
+	default y if !SMALL_FLASH
+	select KERNEL_EROFS_FS_XATTR
 
 config KERNEL_EXT4_FS_SECURITY
 	bool "Ext4 Security Labels"

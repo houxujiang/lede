@@ -66,7 +66,7 @@ get_mac_ascii() {
 	local key="$2"
 	local mac_dirty
 
-	mac_dirty=$(strings "$part" | sed -n 's/^'"$key"'=//p')
+	mac_dirty=$(strings "$part" | sed -n "s/^$key\\(=\\?\)//p")
 
 	# "canonicalize" mac
 	[ -n "$mac_dirty" ] && macaddr_canonicalize "$mac_dirty"
@@ -275,14 +275,8 @@ macaddr_unsetbit_mc() {
 
 macaddr_random() {
 	local randsrc=$(get_mac_binary /dev/urandom 0)
-	
+
 	echo "$(macaddr_unsetbit_mc "$(macaddr_setbit_la "${randsrc}")")"
-}
-
-macaddr_2bin() {
-	local mac=$1
-
-	echo -ne \\x${mac//:/\\x}
 }
 
 macaddr_canonicalize() {
@@ -320,4 +314,11 @@ macaddr_canonicalize() {
 
 dt_is_enabled() {
 	grep -q okay "/proc/device-tree/$1/status"
+}
+
+get_linux_version() {
+	local ver=$(uname -r)
+	local minor=${ver%\.*}
+
+	printf "%d%02d%03d" ${ver%%\.*} ${minor#*\.} ${ver##*\.} 2>/dev/null
 }

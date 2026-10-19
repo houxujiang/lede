@@ -70,8 +70,7 @@ menu "Global build settings"
 
 	config USE_APK
 		imply PACKAGE_apk-mbedtls
-		bool "Use APK instead of OPKG to build distribution (BROKEN)"
-		depends on BROKEN
+		bool "Use APK instead of OPKG to build distribution (EXPERIMENTAL)"
 
 	comment "General build options"
 
@@ -384,6 +383,7 @@ menu "Global build settings"
 	config TARGET_ROOTFS_SECURITY_LABELS
 		bool
 		select KERNEL_SQUASHFS_XATTR
+		select KERNEL_EROFS_FS_SECURITY
 		select KERNEL_EXT4_FS_SECURITY
 		select KERNEL_F2FS_FS_SECURITY
 		select KERNEL_UBIFS_FS_SECURITY
